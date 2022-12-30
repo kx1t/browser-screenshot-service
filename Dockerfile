@@ -1,4 +1,4 @@
-FFROM ghcr.io/sdr-enthusiasts/docker-baseimage@sha256:f0a386c3a166af7b8d329fa1a1d591c4338ac0105a3ffd6184e9a22617f60f22
+FROM ghcr.io/sdr-enthusiasts/docker-baseimage@sha256:f0a386c3a166af7b8d329fa1a1d591c4338ac0105a3ffd6184e9a22617f60f22
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
