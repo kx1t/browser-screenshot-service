@@ -22,7 +22,7 @@ log.setLevel(logging.DEBUG) # notset, debug, info, warning, error, critical
 
 api = responder.API()
 
-BASE_URL = os.environ.get('BASE_URL', 'https://globe.adsbexchange.com/')
+BASE_URL = os.environ.get('BASE_URL', '')
 LOAD_SLEEP_TIME = float(os.environ.get('LOAD_SLEEP_TIME', 1))
 MAP_ARGS = os.environ.get('MAP_ARGS', 'zoom=11&hideSidebar&hideButtons&mapDim=0')
 PAGE_ZOOM = int(os.environ.get('PAGE_ZOOM', '100'))
@@ -32,9 +32,9 @@ MAXTIME = int(os.environ.get('MAXTIME', '30'))
 CANVAS_SIZE = os.environ.get('CANVAS_SIZE', '1200x1600')
 
 @api.route('/snap')
-@api.route('/snap/{icao}')
-async def snap_api(req, resp, *, icao=''):
-  img = get_screenshot(icao)
+@api.route('/snap/{mmsi}')
+async def snap_api(req, resp, *, mmsi=''):
+  img = get_screenshot(mmsi)
   resp.content = img
 
 @api.route('/favicon.ico')
@@ -55,22 +55,22 @@ def one_by_one_pixel():
   return b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
 
 @timeout_decorator.timeout(MAXTIME)
-def get_screenshot(icao):
+def get_screenshot(mmsi):
   '''Returns PNG as a binary. Doesn't serve arbitrary URLs because it'd be a security hole.'''
 
   start_t = time.time()
-  icao = icao.upper()
+  mmsi = mmsi.upper()
   log.warning(time.strftime('%Y-%m-%d %H:%M:%S') + " hi.")
   ss = one_by_one_pixel()
 
-  # either no ICAO or the correct length.
-  if len(icao) and (len(icao) != 6 or not re.match('^[A-F\d]*$', icao)):
-    log.error(f"bad ICAO: {icao}")
+  # either no mmsi or the correct length.
+  if len(mmsi) and (len(mmsi) < 6 or len(mmsi) > 10 or not re.match('^[0-9]*$', mmsi)):
+    log.error(f"bad mmsi: {mmsi}")
     return one_by_one_pixel()
-  #url = f"https://globe.adsbexchange.com/?icao={icao}"
-  #url = f'https://globe.adsbexchange.com/?icao={icao}&zoom=11&hideSidebar&hideButtons'
+  #url = f"https://globe.adsbexchange.com/?mmsi={mmsi}"
+  #url = f'https://globe.adsbexchange.com/?mmsi={mmsi}&zoom=11&hideSidebar&hideButtons'
   _base = safe_url(BASE_URL)
-  url = f'{_base}?icao={icao}&{MAP_ARGS}'
+  url = f'{_base}?mmsi={mmsi}&{MAP_ARGS}'
   log.info(f"pulling url: {url}")
 
   co = selenium.webdriver.chrome.options.Options()

@@ -1,4 +1,4 @@
-FROM ghcr.io/sdr-enthusiasts/docker-baseimage@sha256:f0a386c3a166af7b8d329fa1a1d591c4338ac0105a3ffd6184e9a22617f60f22
+FROM ghcr.io/sdr-enthusiasts/docker-baseimage:python
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
@@ -10,7 +10,7 @@ TEMP_PACKAGES=() && \
 KEPT_PACKAGES=() && \
 KEPT_PACKAGES+=(python3-selenium) && \
 KEPT_PACKAGES+=(chromium-bsu) && \
-KEPT_PACKAGES+=(chromium-driver) && \
+# KEPT_PACKAGES+=(chromium-driver) && \
 TEMP_PACKAGES+=(gcc) &&\
 TEMP_PACKAGES+=(python3-dev) && \
 TEMP_PACKAGES+=(python3-distutils-extra) && \
