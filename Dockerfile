@@ -9,7 +9,7 @@ RUN set -x && \
 TEMP_PACKAGES=() && \
 KEPT_PACKAGES=() && \
 KEPT_PACKAGES+=(python3-selenium) && \
-KEPT_PACKAGES+=(chromium) && \
+KEPT_PACKAGES+=(chromium-bsu) && \
 KEPT_PACKAGES+=(chromium-driver) && \
 TEMP_PACKAGES+=(gcc) &&\
 TEMP_PACKAGES+=(python3-dev) && \
