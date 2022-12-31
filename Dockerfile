@@ -1,4 +1,4 @@
-FROM ghcr.io/sdr-enthusiasts/docker-baseimage:python
+FROM ghcr.io/fredclausen/docker-baseimage:python
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
@@ -9,8 +9,9 @@ RUN set -x && \
 TEMP_PACKAGES=() && \
 KEPT_PACKAGES=() && \
 KEPT_PACKAGES+=(python3-selenium) && \
-KEPT_PACKAGES+=(chromium-bsu) && \
-# KEPT_PACKAGES+=(chromium-driver) && \
+KEPT_PACKAGES+=(chromium) && \
+KEPT_PACKAGES+=(chromium-driver) && \
+KEPT_PACKAGES+=(python3-uvloop) && \
 TEMP_PACKAGES+=(gcc) &&\
 TEMP_PACKAGES+=(python3-dev) && \
 TEMP_PACKAGES+=(python3-distutils-extra) && \
@@ -21,8 +22,7 @@ TEMP_PACKAGES+=(python3-distutils-extra) && \
         ${KEPT_PACKAGES[@]} \
         ${TEMP_PACKAGES[@]} && \
 #
-    pip install -U setuptools pip && \
-    pip install uvloop && \
+    pip install -U setuptools && \
     pip3 install -r /opt/app/requirements.txt && \
 #
 # Clean up:
