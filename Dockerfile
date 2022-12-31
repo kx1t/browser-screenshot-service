@@ -1,4 +1,4 @@
-FROM ghcr.io/fredclausen/docker-baseimage:python
+FROM ghcr.io/sdr-enthusiasts/docker-baseimage:python
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
