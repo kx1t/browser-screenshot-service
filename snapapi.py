@@ -24,7 +24,7 @@ api = responder.API()
 
 BASE_URL = os.environ.get('BASE_URL', '')
 LOAD_SLEEP_TIME = float(os.environ.get('LOAD_SLEEP_TIME', 1))
-MAP_ARGS = os.environ.get('MAP_ARGS', 'zoom=11&hideSidebar&hideButtons&mapDim=0')
+MAP_ARGS = os.environ.get('MAP_ARGS', '')
 PAGE_ZOOM = int(os.environ.get('PAGE_ZOOM', '100'))
 DISABLE_SHM = bool(os.environ.get('DISABLE_SHM'))
 DISABLE_VIZ = bool(os.environ.get('DISABLE_VIZ'))
@@ -67,8 +67,6 @@ def get_screenshot(mmsi):
   if len(mmsi) and (len(mmsi) < 6 or len(mmsi) > 10 or not re.match('^[0-9]*$', mmsi)):
     log.error(f"bad mmsi: {mmsi}")
     return one_by_one_pixel()
-  #url = f"https://globe.adsbexchange.com/?mmsi={mmsi}"
-  #url = f'https://globe.adsbexchange.com/?mmsi={mmsi}&zoom=11&hideSidebar&hideButtons'
   _base = safe_url(BASE_URL)
   url = f'{_base}?mmsi={mmsi}&{MAP_ARGS}'
   log.info(f"pulling url: {url}")

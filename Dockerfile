@@ -24,6 +24,7 @@ TEMP_PACKAGES+=(python3-distutils-extra) && \
 #
     pip install -U setuptools && \
     pip3 install -r /opt/app/requirements.txt && \
+    pip install --upgrade typesystem==0.2.5 && \
 #
 # Clean up:
     apt-get remove -q -y ${TEMP_PACKAGES[@]} && \
