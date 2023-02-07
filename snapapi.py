@@ -13,6 +13,11 @@ import os
 import re
 import logging
 import timeout_decorator
+from fake_useragent import UserAgent
+
+# random user agent
+ua = UserAgent()
+userAgent = ua.random
 
 logging.basicConfig(level=logging.CRITICAL, format='%(message)s')
 log = logging.getLogger(__file__)
@@ -72,6 +77,9 @@ def get_screenshot(icao):
   _base = safe_url(BASE_URL)
   url = f'{_base}?icao={icao}&{MAP_ARGS}'
   log.info(f"pulling url: {url}")
+  #update fake user agent on each run
+  userAgent = ua.random
+  log.info(f"following user agent will be used: {userAgent}")
 
   co = selenium.webdriver.chrome.options.Options()
   #co.add_argument("--delay 5")
@@ -84,7 +92,7 @@ def get_screenshot(icao):
   co.add_argument("--disable-dev-shm-usage")
   co.add_argument("--disable-browser-side-navigation")
   co.add_argument("--disable-gpu")
-  co.add_argument("--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+  co.add_argument(f'--user-agent={UserAgent}')
   #co.add_argument("--incognito")
 
   # thrash on the filesystem, better than the page crashing
