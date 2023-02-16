@@ -60,7 +60,7 @@ def get_screenshot(icao):
 
   start_t = time.time()
   icao = icao.upper()
-  log.warning(time.strftime('%Y-%m-%d %H:%M:%S') + " hi.")
+  log.warning("Starting Process for " + icao + " at " + time.strftime('%Y-%m-%d %H:%M:%S'))
   ss = one_by_one_pixel()
 
   # either no ICAO or the correct length.
