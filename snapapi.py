@@ -68,7 +68,7 @@ def get_screenshot(mmsi):
     log.error(f"bad mmsi: {mmsi}")
     return one_by_one_pixel()
   _base = safe_url(BASE_URL)
-  url = f'{_base}?mmsi={mmsi}&{MAP_ARGS}'
+  url = f'{_base}?mmsi={mmsi}&welcome=false&{MAP_ARGS}'
   log.info(f"pulling url: {url}")
 
   co = selenium.webdriver.chrome.options.Options()
