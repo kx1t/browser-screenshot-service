@@ -32,8 +32,8 @@ MAXTIME = int(os.environ.get('MAXTIME', '30'))
 CANVAS_SIZE = os.environ.get('CANVAS_SIZE', '1200x1600')
 
 @api.route('/snap')
-@api.route('/snap/{icao}')
-async def snap_api(req, resp, *, icao=''):
+@api.route('/snap/{icao}/{lat}/{lon}')
+async def snap_api(req, resp, *, icao='', lat='', lon=''):
   img = get_screenshot(icao)
   resp.content = img
 
@@ -70,7 +70,7 @@ def get_screenshot(icao):
   #url = f"https://globe.adsbexchange.com/?icao={icao}"
   #url = f'https://globe.adsbexchange.com/?icao={icao}&zoom=11&hideSidebar&hideButtons'
   _base = safe_url(BASE_URL)
-  url = f'{_base}?icao={icao}&{MAP_ARGS}'
+  url = f'{_base}?icao={icao}&lat={lat}&lon={lon}&{MAP_ARGS}'
   log.info(f"pulling url: {url}")
 
   co = selenium.webdriver.chrome.options.Options()
