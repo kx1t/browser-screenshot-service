@@ -123,6 +123,14 @@ def get_screenshot(mmsi):
   # the bare 'window-size=WxH' form is silently ignored.
   co.add_argument(f'--window-size={CANVAS_SIZE.replace("x", ",")}')
   with selenium.webdriver.Chrome(options=co) as browser:
+    # Under CPU starvation (prod host), a renderer can go deaf for a long time.
+    # Without explicit selenium-level timeouts, a single WebDriver command can
+    # block on the chromedriver HTTP socket indefinitely, so timeout_decorator
+    # ends up firing mid-command and leaving browser state wedged. Bound every
+    # command so we fail fast and cleanly instead.
+    browser.set_page_load_timeout(max(10, MAXTIME - 5))
+    browser.set_script_timeout(max(10, MAXTIME - 5))
+    browser.implicitly_wait(0)  # we do explicit waits; keep implicit at 0
     browser.get(url)
 
     # https://www.selenium.dev/selenium/docs/api/py/webdriver_support/selenium.webdriver.support.expected_conditions.html
@@ -130,21 +138,39 @@ def get_screenshot(mmsi):
     # second argument to WebDriverWait = timeout in seconds
     # wait for the FIRST visible element matching any of MAP_SELECTOR, so we don't
     # burn the full timeout on a selector that doesn't exist in this UI version.
+    #
+    # Do the whole scan in ONE round-trip: N find_elements + N is_displayed()
+    # calls = N HTTP round-trips to chromedriver, each of which can stall under
+    # load. A single execute_script is far more resilient.
     selectors = [s.strip() for s in MAP_SELECTOR.split(',') if s.strip()]
-    def any_visible(browser):
-      for sel in selectors:
-        try:
-          for e in browser.find_elements(selenium.webdriver.common.by.By.CSS_SELECTOR, sel):
-            if e.is_displayed():
-              log.debug(f"selector matched: {sel}")
-              return e
-        except selenium.common.exceptions.WebDriverException:
-          continue
-      return False
-    try:
-      elem0 = selenium.webdriver.support.wait.WebDriverWait(browser, SELECTOR_TIMEOUT).until(any_visible)
-      log.debug("okay, got the basic canvas.")
-    except selenium.common.exceptions.TimeoutException as ex:
+    find_visible_js = '''
+      const sels = arguments[0];
+      for (const sel of sels) {
+        for (const e of document.querySelectorAll(sel)) {
+          const r = e.getBoundingClientRect();
+          const style = window.getComputedStyle(e);
+          if (r.width > 0 && r.height > 0 &&
+              style.visibility !== 'hidden' && style.display !== 'none') {
+            return sel;
+          }
+        }
+      }
+      return null;
+    '''
+    # cap the selector wait so selector + tile-idle + screenshot fit in MAXTIME
+    selector_deadline = time.time() + min(SELECTOR_TIMEOUT, max(5, MAXTIME - LOAD_SLEEP_TIME - 8))
+    matched = None
+    while time.time() < selector_deadline:
+      try:
+        matched = browser.execute_script(find_visible_js, selectors)
+      except selenium.common.exceptions.WebDriverException:
+        matched = None
+      if matched:
+        log.debug(f"selector matched: {matched}")
+        log.debug("okay, got the basic canvas.")
+        break
+      time.sleep(0.5)
+    if not matched:
       log.warning("WE'LL DO IT LIVE.")
 
     # this doesn't work. but it's an idea.
@@ -163,7 +189,9 @@ def get_screenshot(mmsi):
     # tile-like requests (images/tiles), because both tar1090 and AIS-catcher
     # stream data-plane updates continuously (aircraft.json polling, WebSockets)
     # and counting ALL requests would never go quiet on tar1090.
-    idle_deadline = time.time() + LOAD_SLEEP_TIME
+    # Cap the idle wait so we always leave room for the screenshot within MAXTIME.
+    remaining_budget = start_t + MAXTIME - time.time()
+    idle_deadline = time.time() + max(0, min(LOAD_SLEEP_TIME, remaining_budget - 6))
     quiet_period = float(os.environ.get('IDLE_QUIET_PERIOD', 1.0))
     setup_js = r'''
       window.__snapTileActive = 0;
