@@ -1,3 +1,4 @@
-responder
-# selenium # via apt
-timeout-decorator
+# All runtime dependencies are installed via apt in the Dockerfile:
+#   python3-starlette, python3-uvicorn, python3-timeout-decorator, python3-selenium
+# This file is kept only as a historical reference; nothing is pip-installed.
+
